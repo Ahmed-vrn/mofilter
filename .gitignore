@@ -1,0 +1,21 @@
+# أسرار — لا تُرفع أبدًا
+github.json
+github.local.json
+.token
+*.token
+
+# بايثون
+__pycache__/
+*.py[cod]
+
+# مخرجات وبيانات محلية
+webapp-*.txt
+out/
+*.log
+
+# نظام
+.DS_Store
+Thumbs.db
+
+# دليل عام لا يخص المشروع (يبقى في مجلد النقل فقط)
+دليل-تشغيل-تطبيقات-الذكاء-الاصطناعي.pdf
