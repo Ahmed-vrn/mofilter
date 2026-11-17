@@ -35,22 +35,43 @@ import webbrowser
 from collections import deque
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import unquote, urlparse, parse_qs
+from urllib.parse import unquote, urlparse
 
 APP_VERSION = "1.4.1"
 # أيقونة التطبيق (64px) مضمّنة كي تظهر نافذة سطح المكتب بأيقونة صحيحة حتى بلا ملفات خارجية.
 ICON_B64 = "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"
 HOME = os.path.expanduser("~")
-DESKTOP = os.path.join(HOME, "Desktop")
-SKILL_DIR = os.path.join(HOME, ".config", "opencode", "skills", "vpn-list")
+XDG_DATA = os.path.expanduser(os.environ.get("XDG_DATA_HOME") or os.path.join(HOME, ".local", "share"))
+XDG_CONFIG = os.path.expanduser(os.environ.get("XDG_CONFIG_HOME") or os.path.join(HOME, ".config"))
+
+
+def _desktop_dir():
+    """سطح المكتب الحقيقي (XDG) مع الرجوع إلى ~/Desktop."""
+    env = os.environ.get("XDG_DESKTOP_DIR", "").strip()
+    if env and os.path.isdir(os.path.expanduser(env)):
+        return os.path.expanduser(env)
+    if shutil.which("xdg-user-dir"):
+        try:
+            out = subprocess.run(["xdg-user-dir", "DESKTOP"], capture_output=True,
+                                 text=True, timeout=5).stdout.strip()
+            if out and os.path.isdir(out):
+                return out
+        except Exception:
+            pass
+    return os.path.join(HOME, "Desktop")
+
+
+DESKTOP = _desktop_dir()
+SKILL_DIR = os.path.join(os.environ.get("OPENCODE_SKILLS_DIR")
+                         or os.path.join(XDG_CONFIG, "opencode", "skills"), "vpn-list")
 RUN_PY = os.path.join(SKILL_DIR, "scripts", "run.py")
-DATA_DIR = os.path.join(HOME, ".local", "share", "vpn-list")
+DATA_DIR = os.path.join(XDG_DATA, "vpn-list")
 RESULTS_DIR = os.path.join(DESKTOP, "vpn-list")
 READY_DIR = os.path.join(DESKTOP, "vpn-ready")
 SERVERS_FILE = os.path.join(DESKTOP, "vpn-servers.txt")
 APP_LOG = os.path.join(DATA_DIR, "webapp.log")
 SYNC_PY = os.path.join(SKILL_DIR, "scripts", "github_sync.py")
-GITHUB_CFG = os.path.join(HOME, ".config", "vpn-list", "github.json")
+GITHUB_CFG = os.path.join(XDG_CONFIG, "vpn-list", "github.json")
 SETTINGS_FILE = os.path.join(DATA_DIR, "webapp-settings.json")
 MERGED_LINKS = os.path.join(DATA_DIR, "webapp-merged-links.txt")
 ALL_LINKS = os.path.join(DATA_DIR, "webapp-all-links.txt")
@@ -141,13 +162,29 @@ DOWNLOADS = {
 
 
 def resolve_result(name):
-    """أحدث نسخة من ملف نتيجة: على سطح المكتب أو في مجلد البيانات."""
-    candidates = [os.path.join(RESULTS_DIR, name), os.path.join(DATA_DIR, name)]
+    """أحدث نسخة من ملف نتيجة: على سطح المكتب أو في مجلد البيانات أو مجلد الجاهز."""
+    candidates = [
+        os.path.join(RESULTS_DIR, name),
+        os.path.join(DATA_DIR, name),
+        os.path.join(READY_DIR, name),
+    ]
     found = [p for p in candidates if os.path.isfile(p)]
     if not found:
         return candidates[0]
     return max(found, key=os.path.getmtime)
 
+
+def current_servers_file():
+    """الملف الذي تعرضه الواجهة: vpn-servers.txt وإلا أحدث نتيجة مستقرة."""
+    if os.path.isfile(SERVERS_FILE) and os.path.getsize(SERVERS_FILE) > 0:
+        return SERVERS_FILE
+    alt = resolve_result("working_stable_unique.txt")
+    return alt if os.path.isfile(alt) else SERVERS_FILE
+
+
+# عقد مع سكربت المهارة run.py: يجب أن يطبع مراحل بصيغة "== n/6"
+# وإلا انكسر شريط التقدم صامتًا. لا تغيّر هذا التنسيق في run.py
+# دون تحديث STAGE_RE هنا.
 STAGE_RE = re.compile(r"==\s*(\d)\s*/\s*6")
 EMOJI_FLAG_RE = re.compile(
     "[\U0001F1E6-\U0001F1FF]{2}"
@@ -166,7 +203,15 @@ def read_lines(path):
 
 
 def count_lines(path):
-    return len(read_lines(path))
+    total = 0
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as fh:
+            for line in fh:
+                if line.strip():
+                    total += 1
+    except OSError:
+        return 0
+    return total
 
 
 def mtime_str(path):
@@ -195,6 +240,12 @@ def flag_for(code):
     return chr(0x1F1E6 + ord(code[0]) - 65) + chr(0x1F1E6 + ord(code[1]) - 65)
 
 
+def b64decode_text(blob):
+    """فك base64 مع دعم urlsafe والحشو الناقص."""
+    blob = (blob or "").strip().replace("-", "+").replace("_", "/")
+    return base64.b64decode(blob + "=" * (-len(blob) % 4)).decode("utf-8", "ignore")
+
+
 def tag_of(raw):
     if "#" in raw:
         return unquote(raw.split("#", 1)[1]).strip()
@@ -210,10 +261,21 @@ def parse_link(raw):
     try:
         if scheme == "vmess":
             blob = raw.split("://", 1)[1].split("#", 1)[0]
-            data = json.loads(base64.b64decode(blob + "=" * (-len(blob) % 4)).decode("utf-8", "ignore"))
+            data = json.loads(b64decode_text(blob))
             host = str(data.get("add") or "")
             port = str(data.get("port") or "")
             name = str(data.get("ps") or name)
+        elif scheme == "ss" and "@" not in raw.split("://", 1)[1].split("#", 1)[0]:
+            # صيغة ss القديمة: ss://base64(method:password@host:port)#name
+            blob = raw.split("://", 1)[1].split("#", 1)[0].split("?", 1)[0]
+            decoded = b64decode_text(blob)
+            _userinfo, sep, hostport = decoded.rpartition("@")
+            if sep:
+                parsed = urlparse("ss://" + hostport)
+                host = parsed.hostname or ""
+                port = str(parsed.port or "")
+            elif ":" in decoded:
+                host, _, port = decoded.rpartition(":")
         else:
             parsed = urlparse(raw.split("#", 1)[0])
             host = parsed.hostname or ""
@@ -238,9 +300,7 @@ def parse_link(raw):
 
 
 def load_servers():
-    raw = read_lines(SERVERS_FILE)
-    if not raw:
-        raw = read_lines(resolve_result("working_stable_unique.txt"))
+    raw = read_lines(current_servers_file())
     out = []
     for line in raw:
         item = parse_link(line)
@@ -479,6 +539,7 @@ class Runner:
         self.reader = None
         self._stop_requested = False
         self.active = False
+        self.limited = False
 
     # ---------------------------------------------------------------
     def is_running(self):
@@ -493,6 +554,14 @@ class Runner:
             os.makedirs(DATA_DIR, exist_ok=True)
             with open(APP_LOG, "a", encoding="utf-8") as fh:
                 fh.write(line + "\n")
+        except OSError:
+            pass
+
+    def _rotate_log(self):
+        """أبقِ السجل صغيرًا: أعد تسميته عند تجاوز 5 MB."""
+        try:
+            if os.path.getsize(APP_LOG) > 5 * 1024 * 1024:
+                os.replace(APP_LOG, APP_LOG + ".1")
         except OSError:
             pass
 
@@ -523,10 +592,12 @@ class Runner:
 
         if mode == "russia":
             data = load_settings()
-            data.update({"carrier": carrier or "auto", "throttle": bool(throttle), "dedupe": dedupe})
+            data.update({"carrier": carrier or "auto", "throttle": bool(throttle), "dedupe": dedupe,
+                         "rus_limit": max(0, int(limit or 0))})
             save_settings(data)
 
         self._backup_all()
+        self._rotate_log()
         self.lines.clear()
         self.exit_code = None
         self.stage = ""
@@ -556,7 +627,8 @@ class Runner:
                 args += ["--throttle"]
         if source:
             args += ["--source", source]
-        return (args, {"VPN_THRONE_SYNC": "0"})
+        return (args, {"VPN_THRONE_SYNC": "0", "VPN_DESKTOP": DESKTOP,
+                       "VPN_DATA": DATA_DIR, "VPN_SINGLE_OUT": SERVERS_FILE})
 
     def _fetch_command(self):
         args = [sys.executable, "-u", "-c", FETCH_CODE]
@@ -567,6 +639,8 @@ class Runner:
             "WEBAPP_RU_EXTRA": ",".join(RU_EXTRA_SOURCES),
             "WEBAPP_DEEP": "1" if os.environ.get("VPN_DEEP", "").lower() in ("1", "true", "yes", "on") else "0",
             "VPN_THRONE_SYNC": "0",
+            "VPN_DESKTOP": DESKTOP,
+            "VPN_DATA": DATA_DIR,
         }
         return (args, env)
 
@@ -582,6 +656,8 @@ class Runner:
             "WEBAPP_CARRIER": carrier or "auto",
             "WEBAPP_LIMIT": str(limit or 0),
             "VPN_THRONE_SYNC": "0",
+            "VPN_DESKTOP": DESKTOP,
+            "VPN_DATA": DATA_DIR,
         }
         return (args, env)
 
@@ -606,28 +682,44 @@ class Runner:
 
     def _run_plan(self, plan):
         rc = 0
-        for args, extra_env in plan:
-            env = dict(os.environ)
-            env.update(extra_env)
-            env.setdefault("PYTHONUNBUFFERED", "1")
+        try:
+            for args, extra_env in plan:
+                env = dict(os.environ)
+                env.update(extra_env)
+                env.setdefault("PYTHONUNBUFFERED", "1")
+                try:
+                    proc = subprocess.Popen(
+                        args, cwd=SKILL_DIR, stdin=subprocess.DEVNULL,
+                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                        text=True, bufsize=1, env=env, start_new_session=True)
+                except OSError as exc:
+                    self.lines.append("[خطأ] تعذّر تشغيل العملية: %s" % exc)
+                    rc = 1
+                    break
+                with self.lock:
+                    self.proc = proc
+                self._stream(proc)
+                rc = proc.wait()
+                if rc != 0:
+                    break
+        except Exception as exc:  # لا تبقِ الواجهة عالقة في حالة "قيد التشغيل"
+            self.lines.append("[خطأ غير متوقع] %s" % exc)
+            rc = 1
+        finally:
             try:
-                proc = subprocess.Popen(
-                    args, cwd=SKILL_DIR, stdin=subprocess.DEVNULL,
-                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                    text=True, bufsize=1, env=env, start_new_session=True)
-            except OSError as exc:
-                self.lines.append("[خطأ] تعذّر تشغيل العملية: %s" % exc)
-                rc = 1
-                break
-            with self.lock:
-                self.proc = proc
-            self._stream(proc)
-            rc = proc.wait()
-            if rc != 0:
-                break
-        self._finish(rc)
+                self._finish(rc)
+            finally:
+                with self.lock:
+                    self.proc = None
+                    self.active = False
 
     def _stream(self, proc):
+        log_fh = None
+        try:
+            os.makedirs(DATA_DIR, exist_ok=True)
+            log_fh = open(APP_LOG, "a", encoding="utf-8")
+        except OSError:
+            pass
         try:
             for line in proc.stdout:
                 line = line.rstrip("\n")
@@ -638,15 +730,24 @@ class Runner:
                 if match:
                     self.stage = "%s/6" % match.group(1)
                 self.lines.append(line)
-                try:
-                    with open(APP_LOG, "a", encoding="utf-8") as fh:
-                        fh.write(line + "\n")
-                except OSError:
-                    pass
+                if log_fh:
+                    try:
+                        log_fh.write(line + "\n")
+                    except OSError:
+                        pass
         except Exception as exc:
             self.lines.append("[قارئ السجل] %s" % exc)
+        finally:
+            if log_fh:
+                try:
+                    log_fh.close()
+                except OSError:
+                    pass
 
     def _finish(self, code):
+        cancelled = self._stop_requested
+        if cancelled and code == 0:
+            code = 130  # أُوقف بطلب المستخدم — لا تعتبره نجاحًا
         self.exit_code = code
         self.ended = time.time()
         self._restore_links()
@@ -669,20 +770,6 @@ class Runner:
         with self.lock:
             self.proc = None
             self.active = False
-
-    def _slice_links(self, n):
-        src = os.path.join(DATA_DIR, "links.txt")
-        lines = [ln for ln in read_lines(src) if "://" in ln][:max(1, n)]
-        if not lines:
-            return ""
-        try:
-            os.makedirs(DATA_DIR, exist_ok=True)
-            dst = os.path.join(DATA_DIR, "webapp-links.txt")
-            with open(dst, "w", encoding="utf-8") as fh:
-                fh.write("\n".join(lines) + "\n")
-            return dst
-        except OSError:
-            return ""
 
     def _backup_all(self):
         """نسخة أمان كاملة قبل أي تشغيل (القائمة + النتائج + الحزمة)."""
@@ -712,45 +799,6 @@ class Runner:
                 shutil.copy2(tarball, os.path.join(BACKUP_DIR, "vpn-ready.tar.gz"))
         except OSError:
             pass
-
-    def _pump(self, proc):
-        try:
-            for line in proc.stdout:
-                line = line.rstrip("\n")
-                if not line:
-                    self.lines.append("")
-                    continue
-                match = STAGE_RE.search(line)
-                if match:
-                    self.stage = "%s/6" % match.group(1)
-                self.lines.append(line)
-                try:
-                    with open(APP_LOG, "a", encoding="utf-8") as fh:
-                        fh.write(line + "\n")
-                except OSError:
-                    pass
-        except Exception as exc:
-            self.lines.append("[قارئ السجل] %s" % exc)
-        code = proc.wait()
-        self.exit_code = code
-        self.ended = time.time()
-
-        restored = False
-        if code != 0 or count_lines(SERVERS_FILE) == 0:
-            restored = self._restore_backup()
-        if restored:
-            reason = ("لم تُنتج القائمة أي سيرفر" if code == 0
-                      else "فشل التشغيل برمز %s" % code)
-            self.log("أُعيدت القائمة السابقة تلقائيًا (%s)" % reason)
-        elif code == 0:
-            self.log("انتهى التشغيل بنجاح — %d سيرفر" % count_lines(SERVERS_FILE))
-            if self.limited:
-                self.log("نتيجة جزئية (حد الفحص) — لم يُنشر تلقائيًا إلى GitHub")
-            elif load_settings().get("auto_sync", True) and github_config().get("token"):
-                start_sync(force=False)
-        else:
-            self.log("انتهى التشغيل برمز %s" % code)
-        self.stage = "done" if code == 0 else "failed"
 
     def _restore_links(self):
         """أعد ملف الروابط الكامل بعد التشغيل (الفحص يستخدم مجموعة جزئية)."""
@@ -808,18 +856,46 @@ class Runner:
                 proc.terminate()
             except OSError:
                 pass
+
+        # انتظر حتى 5 ثوانٍ باستخدام waitpid(WNOHANG) — أدق من poll()،
+        # ولا يتعارض مع Popen.wait() في خيط التشغيل.
+        import errno
+        reaped = False
         for _ in range(20):
-            if proc.poll() is not None:
+            try:
+                pid, _status = os.waitpid(proc.pid, os.WNOHANG)
+            except ChildProcessError:
+                reaped = True
+                break
+            except OSError as exc:
+                if exc.errno != errno.ECHILD:
+                    self.log("تعذّر انتظار العملية: %s" % exc)
+                reaped = True
+                break
+            if pid == proc.pid:
+                reaped = True
                 break
             time.sleep(0.25)
-        if proc.poll() is None:
+
+        if reaped:
+            proc.returncode = -signal.SIGTERM  # الإيقاف ليس نجاحًا
+            self.log("توقّفت العملية بأمر الإيقاف")
+            return True, ""
+
+        # لم يستجب خلال 5 ثوانٍ — اقتل المجموعة كلها ثم انتظر قليلًا
+        self.log("العملية لم تستجب خلال 5 ثوانٍ — إرسال SIGKILL")
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except OSError:
             try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                proc.kill()
             except OSError:
-                try:
-                    proc.kill()
-                except OSError:
-                    pass
+                pass
+        try:
+            os.waitpid(proc.pid, 0)
+        except OSError:
+            pass
+        proc.returncode = -signal.SIGKILL
         return True, ""
 
 
@@ -895,6 +971,8 @@ HTML = r"""<!DOCTYPE html>
        cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.16s;white-space:nowrap}
   .btn:hover:not(:disabled){background:#1c2d47;border-color:#2f4463;transform:translateY(-1px)}
   .btn:disabled{opacity:.42;cursor:not-allowed;transform:none}
+  .btn.gh-off{opacity:.55;cursor:not-allowed}
+  .btn.gh-off:hover{background:#16243a;border-color:var(--line2);transform:none}
   .btn.primary{background:linear-gradient(145deg,var(--teal2),#14786f);border-color:#2ec4b6;color:#04120f}
   .btn.primary:hover:not(:disabled){background:linear-gradient(145deg,#25b3a6,#178a80)}
   .btn.blue{background:linear-gradient(145deg,#3f6fd8,#2f57ae);border-color:#5b8cff;color:#f2f6ff}
@@ -1118,7 +1196,7 @@ HTML = r"""<!DOCTYPE html>
 
   <div class="footer">
     تطبيق محلي بالكامل — لا يتصل بأي خادم خارجي. يعمل على <code>127.0.0.1</code> فقط.
-    <br>الإصدار __VERSION__ · لتشغيله: <code>python3 ~/Desktop/vpn-web-app.py</code>
+    <br>الإصدار __VERSION__ · لتشغيله: <code>python3 ~/.local/share/mofilter/vpn-web-app.py</code>
   </div>
 </div>
 
@@ -1220,7 +1298,7 @@ HTML = r"""<!DOCTYPE html>
         if(d.settings.carrier) $("carrierSel").value = d.settings.carrier;
         if(typeof d.settings.throttle === "boolean") $("throttleChk").checked = d.settings.throttle;
         if(d.settings.dedupe) $("dedupeSel").value = d.settings.dedupe;
-        if(typeof d.settings.rus_limit === "number") $("rusLimit").value = d.settings.rus_limit;
+        if(typeof d.settings.rus_limit === "number" && document.activeElement !== $("rusLimit")) $("rusLimit").value = d.settings.rus_limit;
       }
       if(d.files){
         Array.prototype.forEach.call(document.querySelectorAll("a.file"), function(a){
@@ -1250,8 +1328,23 @@ HTML = r"""<!DOCTYPE html>
     el.innerHTML = html;
     var sb = $("btnSync");
     if(sb){
-      sb.disabled = state.running || s.running || window.__gh === false;
-      sb.title = (window.__gh === false) ? "GitHub غير مضبوط على هذا الجهاز" : "";
+      var ghOff = window.__gh === false;
+      // لا نستخدم disabled هنا: الزر المعطّل لا يُطلق حدث النقر، فلا يظهر السبب.
+      sb.disabled = state.running || s.running;
+      sb.classList.toggle("gh-off", ghOff);
+      sb.setAttribute("aria-disabled", ghOff ? "true" : "false");
+      sb.title = ghOff ? "GitHub غير مضبوط — انسخ github.json إلى ~/.config/vpn-list/" : "";
+    }
+    // أرفق الإشعار مرة واحدة فقط، واعمل حتى لو تغيّرت حالة GitHub لاحقًا
+    if(sb && !sb._ghNotice){
+      sb._ghNotice = true;
+      sb.addEventListener("click", function(ev){
+        if(window.__gh === false){
+          ev.preventDefault();
+          ev.stopImmediatePropagation();
+          toast("GitHub غير مضبوط: انسخ github.json إلى ~/.config/vpn-list/ ثم أعد التشغيل");
+        }
+      }, true);
     }
   }
 
@@ -1282,6 +1375,15 @@ HTML = r"""<!DOCTYPE html>
 
   function startRun(mode){
     var src = $("srcInput").value.trim();
+    // تحذير: الحد=0 يعني فحص كل الروابط — قد يستغرق ساعات
+    if(mode === "russia"){
+      var limNow = parseInt($("rusLimit").value, 10);
+      if(isNaN(limNow) || limNow === 0){
+        if(!confirm("الحد = 0 يعني فحص كل الروابط (قد يستغرق ساعات).\nهل تريد المتابعة؟")){
+          return;
+        }
+      }
+    }
     if(mode === "source" && !src){ toast("أدخل رابط اشتراك أولًا"); return; }
     var body = {mode: mode};
     if(src) body.source = src;
@@ -1348,6 +1450,10 @@ HTML = r"""<!DOCTYPE html>
   });
   $("btnSource").addEventListener("click", function(){ startRun("source"); });
   $("btnSync").addEventListener("click", function(){
+    if(window.__gh === false){
+      toast("GitHub غير مضبوط: انسخ github.json إلى ~/.config/vpn-list/ ثم أعد التشغيل");
+      return;
+    }
     api("/api/sync", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({force:true})})
       .then(function(d){ toast(d.ok ? "بدأ النشر إلى GitHub…" : (d.error || "تعذّر النشر")); })
       .catch(function(e){ toast("خطأ: " + e.message); });
@@ -1383,16 +1489,57 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
     # ---------------------------------------------------------------
+    def _local_host(self):
+        """ارفض أي Host غريب (حماية من DNS rebinding)."""
+        host = (self.headers.get("Host") or "").strip().lower()
+        if not host:
+            return True
+        if host.startswith("["):
+            end = host.find("]")
+            name = host[1:end] if end > 0 else host
+        elif host.count(":") == 1:
+            name = host.rsplit(":", 1)[0]
+        else:
+            name = host
+        return name in ("127.0.0.1", "localhost", "::1")
+
+    def _local_origin(self):
+        """ارفض POST قادمًا من صفحة خارجية (حماية CSRF)."""
+        site = (self.headers.get("Sec-Fetch-Site") or "").strip().lower()
+        if site and site not in ("same-origin", "none"):
+            return False
+        origin = (self.headers.get("Origin") or "").strip()
+        if not origin:
+            return True
+        parsed = urlparse(origin)
+        return (parsed.scheme == "http"
+                and parsed.hostname in ("127.0.0.1", "localhost", "::1")
+                and parsed.port == self.server.server_port)
+
     def _send(self, code, body, ctype="application/json; charset=utf-8", extra=None):
         if isinstance(body, str):
             body = body.encode("utf-8")
+        headers = {
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "no-referrer",
+        }
+        if ctype.startswith("text/html"):
+            headers.update({
+                "X-Frame-Options": "DENY",
+                "Content-Security-Policy": (
+                    "default-src 'self'; img-src 'self' data:; "
+                    "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; "
+                    "connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"
+                ),
+            })
+        if extra:
+            headers.update(extra)
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
-        if extra:
-            for key, value in extra.items():
-                self.send_header(key, value)
+        for key, value in headers.items():
+            self.send_header(key, value)
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
@@ -1408,6 +1555,9 @@ class Handler(BaseHTTPRequestHandler):
         self.do_GET()
 
     def do_GET(self):
+        if not self._local_host():
+            self._error("طلب غير محلي مرفوض", 403)
+            return
         parsed = urlparse(self.path)
         path = parsed.path
 
@@ -1452,8 +1602,17 @@ class Handler(BaseHTTPRequestHandler):
         self._error("غير موجود", 404)
 
     def do_POST(self):
+        if not self._local_host() or not self._local_origin():
+            self._error("طلب غير محلي مرفوض", 403)
+            return
         parsed = urlparse(self.path)
-        length = int(self.headers.get("Content-Length") or 0)
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            length = 0
+        if length > 1_000_000:
+            self._error("الطلب كبير جدًا", 413)
+            return
         raw = self.rfile.read(length) if length else b"{}"
         try:
             payload = json.loads(raw.decode("utf-8") or "{}")
@@ -1464,12 +1623,14 @@ class Handler(BaseHTTPRequestHandler):
             mode = str(payload.get("mode") or "full")
             if mode not in ("full", "quick", "resume", "source", "russia"):
                 mode = "full"
-            source = str(payload.get("source") or "").strip()
+            source = str(payload.get("source") or "").strip()[:4096]
             try:
-                limit = int(payload.get("limit") or 0)
+                limit = max(0, min(100000, int(payload.get("limit") or 0)))
             except Exception:
                 limit = 0
             carrier = str(payload.get("carrier") or "auto")
+            if carrier not in ("auto", "mts", "megafon", "beeline", "tele2"):
+                carrier = "auto"
             throttle = payload.get("throttle")
             throttle = None if throttle is None else bool(throttle)
             dedupe = str(payload.get("dedupe") or "smart")
@@ -1497,6 +1658,17 @@ class Handler(BaseHTTPRequestHandler):
             data = load_settings()
             if "auto_sync" in payload:
                 data["auto_sync"] = bool(payload.get("auto_sync"))
+            if "rus_limit" in payload:
+                try:
+                    data["rus_limit"] = max(0, min(100000, int(payload.get("rus_limit") or 0)))
+                except (TypeError, ValueError):
+                    data["rus_limit"] = 0
+            if "carrier" in payload and str(payload.get("carrier")) in ("auto", "mts", "megafon", "beeline", "tele2"):
+                data["carrier"] = str(payload.get("carrier"))
+            if "throttle" in payload:
+                data["throttle"] = bool(payload.get("throttle"))
+            if "dedupe" in payload and str(payload.get("dedupe")) in ("text", "smart", "server"):
+                data["dedupe"] = str(payload.get("dedupe"))
             save_settings(data)
             self._json({"ok": True, "settings": data})
             return
@@ -1505,14 +1677,21 @@ class Handler(BaseHTTPRequestHandler):
 
     # ---------------------------------------------------------------
     def _tail(self, path, n=120):
+        """آخر n سطرًا من ملف كبير دون قراءته كاملًا."""
         try:
-            with open(path, "r", encoding="utf-8", errors="ignore") as fh:
-                return "".join(deque(fh, maxlen=n))
+            with open(path, "rb") as fh:
+                fh.seek(0, os.SEEK_END)
+                size = fh.tell()
+                block = min(size, 256 * 1024)
+                fh.seek(size - block)
+                data = fh.read().decode("utf-8", "ignore")
+            return "\n".join(data.splitlines()[-n:])
         except OSError:
             return ""
 
     def state_payload(self):
-        total = count_lines(SERVERS_FILE)
+        current = current_servers_file()
+        total = count_lines(current)
         stable = count_lines(resolve_result("working_stable_unique.txt"))
         working = count_lines(resolve_result("working_unique.txt"))
         if total and not stable:
@@ -1528,11 +1707,11 @@ class Handler(BaseHTTPRequestHandler):
                 "total": total,
                 "stable": stable,
                 "working": working,
-                "updated": mtime_str(SERVERS_FILE),
-                "updated_size": human_size(SERVERS_FILE),
+                "updated": mtime_str(current),
+                "updated_size": human_size(current),
             },
             "paths": {
-                "servers": SERVERS_FILE,
+                "servers": current,
                 "results": RESULTS_DIR,
                 "log": APP_LOG,
                 "skill": SKILL_DIR,
@@ -1557,6 +1736,10 @@ class Handler(BaseHTTPRequestHandler):
 #  التشغيل
 # --------------------------------------------------------------------------
 def free_port(start):
+    if start <= 0:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.bind(("127.0.0.1", 0))
+            return sock.getsockname()[1]
     port = start
     while port < start + 200:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:

@@ -4,5 +4,5 @@
   "branch": "main",
   "path": "vpn-servers.txt",
   "public": true,
-  "token": "PUT_YOUR_GITHUB_TOKEN_HERE"
+  "token": ""
 }

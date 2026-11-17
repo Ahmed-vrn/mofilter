@@ -22,12 +22,13 @@ import sys
 import time
 import urllib.request
 
-VERSION = "1.0.0"
+VERSION = "1.4.1"
 NAME = "مفلتر السيرفرات"
 
 HOME = os.path.expanduser("~")
-APP_HOME = os.path.join(HOME, ".local", "share", "mofilter")
-DATA_HOME = os.path.join(HOME, ".local", "share", "vpn-list")
+XDG_DATA = os.path.expanduser(os.environ.get("XDG_DATA_HOME") or os.path.join(HOME, ".local", "share"))
+APP_HOME = os.path.join(XDG_DATA, "mofilter")
+DATA_HOME = os.path.join(XDG_DATA, "vpn-list")
 PORT_FILE = os.path.join(APP_HOME, "desktop-port")
 LOCK_FILE = os.path.join(APP_HOME, "desktop.lock")
 LOG_FILE = os.path.join(APP_HOME, "desktop.log")
@@ -190,7 +191,7 @@ def open_window(url):
             proc = subprocess.Popen(args, stdout=DEVNULL, stderr=DEVNULL,
                                     start_new_session=True)
             log("window pid %d (%s)" % (proc.pid, chrome))
-            return proc, PROFILE
+            return proc, PROFILE, True
         except OSError as exc:
             log("chrome failed: %s" % exc)
     # Fallback: Firefox (normal window) or the default browser.
@@ -201,16 +202,18 @@ def open_window(url):
                                     stdout=DEVNULL, stderr=DEVNULL,
                                     start_new_session=True)
             log("window pid %d (firefox)" % proc.pid)
-            return proc, None
+            return proc, None, True
         except OSError:
             pass
     try:
         subprocess.Popen(["xdg-open", url], stdout=DEVNULL, stderr=DEVNULL,
                          start_new_session=True)
         log("xdg-open used")
+        # لا نستطيع تتبّع نافذة المتصفح الافتراضي؛ نُبقي الخادم حتى إشارة الإغلاق.
+        return None, None, True
     except OSError as exc:
         log("cannot open browser: %s" % exc)
-    return None, None
+    return None, None, False
 
 
 def window_alive(proc, profile):
@@ -319,10 +322,14 @@ def main():
                 time.sleep(0.5)
         finally:
             stop(proc, None)
+            try:
+                os.unlink(PORT_FILE)
+            except OSError:
+                pass
         return 0
 
-    window, profile = open_window(url)
-    if window is None and profile is None:
+    window, profile, opened = open_window(url)
+    if not opened:
         notify("لم يُعثر على متصفح لعرض الواجهة.\nثبّت Chrome أو Firefox ثم أعد المحاولة.")
         stop(proc, None)
         return 1

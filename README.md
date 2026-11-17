@@ -49,8 +49,8 @@ behaviour of MTS, Megafon, Beeline and Tele2.
 
 ### From the release archive (recommended)
 
-Download `mofilter-desktop-transfer.zip` from the latest release, extract it,
-then:
+Download the single-file package `مفلتر السيرفرات` from the latest release,
+put it anywhere, then:
 
 ```bash
 bash "مفلتر السيرفرات"
@@ -107,6 +107,9 @@ Installed paths:
 | `~/Desktop/vpn-servers.txt` | the merged working servers |
 | `~/Desktop/vpn-list/` | full result set |
 
+Paths follow `XDG_DATA_HOME` / `XDG_CONFIG_HOME` and the real desktop folder
+(`xdg-user-dir DESKTOP`) when they are set; the table shows the defaults.
+
 ## Russia mode
 
 Carrier profiles live in the skill (`references/carrier-profiles.md`):
@@ -141,8 +144,38 @@ python3 $S/sources_ru.py --refresh --discover               # re-check sources
 python3 $S/sources_ru.py --list                             # show the registry
 ```
 
+### About `--single` and `--no-confirm`
+
+Both flags are passed internally by the web UI when it spawns `run.py`:
+
+- `--single` — run one test pass and write the result immediately
+  (instead of the default multi-phase batch mode).
+- `--no-confirm` — never prompt on stdin; assume "yes" for any
+  confirmation. Required because the UI runs with `stdin=DEVNULL`.
+
+From a terminal you can use them directly:
+
+```bash
+python3 $S/run.py --single --no-confirm
+```
+
 Useful environment variables: `VPN_CARRIER`, `VPN_LIMIT`, `VPN_DEEP=1`,
 `VPN_SOURCE_TIMEOUT`, `VPN_SOURCES_TTL`.
+
+## Development
+
+The repository is self-contained: the app is one Python file, the skill lives
+in `skill/`, and the portable package is rebuilt from both.
+
+```bash
+python3 test_selftest.py     # unit tests, Python stdlib only
+bash fix-mofilter.sh         # maintenance fixes + tests + rebuild
+bash build_package.sh        # rebuild the portable "مفلتر السيرفرات" file
+```
+
+`build_package.sh` refuses to build when `APP_VERSION` and `skill/.version`
+differ, verifies the extracted payload, and keeps the previous package as
+`مفلتر السيرفرات.bak`.
 
 ## Security
 
@@ -150,13 +183,15 @@ Useful environment variables: `VPN_CARRIER`, `VPN_LIMIT`, `VPN_DEEP=1`,
   is git-ignored; `github.example.json` is an empty template.
 - The optional "publish to GitHub" feature reads the token from
   `~/.config/vpn-list/github.json` (mode `600`), never from the repo.
-- The app binds to `127.0.0.1` only.
+- The app binds to `127.0.0.1` only and rejects foreign `Host`/`Origin`
+  headers, so a web page cannot drive the local API.
+- The UI sends `X-Frame-Options: DENY` and a restrictive CSP.
 
 ## Moving to another computer
 
-Copy the extracted folder (or the release archive) to the new machine and run
-`bash "مفلتر السيرفرات"` again. The desktop entry is generated per user, so it
-is never copied between machines. Linux only.
+Copy the project folder (or the single-file `مفلتر السيرفرات` package) to the
+new machine and run `bash "مفلتر السيرفرات"` again. The desktop entry is
+generated per user, so it is never copied between machines. Linux only.
 
 ## Uninstall
 
@@ -173,7 +208,12 @@ rm -rf ~/.local/share/vpn-list              # optional: results and cores
 ```
 مفلتر السيرفرات        self-extracting installer (app + skill + desktop)
 vpn-web-app.py         the app (local HTTP UI + runner)
+skill/                 vpn-list skill (run.py, sources, references)
 desktop/               window launcher, icons, desktop-entry installer
+packaging/             portable-package header template
+build_package.sh       rebuilds the single-file portable package
+fix-mofilter.sh        idempotent project maintenance script
+test_selftest.py       unit tests
 docs/screenshot.png    UI screenshot
 اقرأني.txt             full Arabic user guide
 README.ar.md           Arabic README
@@ -183,6 +223,30 @@ github.example.json    publishing settings template (no token)
 The bundled `vpn-list` skill contains the whole pipeline (`fetch.py`,
 `sources_ru.py`, `retest.py`, `links2sb.py`, `clash_build.py`,
 `enrich.py`) and its own documentation in `SKILL.md` and `references/`.
+
+## FAQ
+
+**Why is the test slow?**
+A full run tests every link with real cores (sing-box/Xray), 3 passes each.
+1500+ links can take hours. Set the **limit** field (e.g. 200–300) for a
+quick trial — links with a Russian whitelist SNI are tested first, so a
+limited run tests the useful subset.
+
+**Can I run it on Windows or macOS?**
+No — the installer, desktop entry and core downloads target Linux. The
+Python app itself is portable, but the desktop integration is Linux-only.
+
+**Do I need OpenCode or DeepSeek Harness?**
+No. The app is fully standalone (Python stdlib only). The skill is copied
+to `~/.config/opencode/skills/vpn-list` as a conventional path, but no
+agent is required.
+
+**Where is the GitHub token stored?**
+In `~/.config/vpn-list/github.json` (mode `600`), never in the repo.
+Without it, the publish button is disabled and auto-sync is skipped.
+
+**How do I reset everything?**
+See the **Uninstall** section, then re-run the installer.
 
 ## License
 

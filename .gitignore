@@ -7,11 +7,21 @@ github.local.json
 # بايثون
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
 # مخرجات وبيانات محلية
 webapp-*.txt
 out/
 *.log
+*.bak
+*.bak.*
+*.tmp
+
+# حزم/أرشيفات مبنية
+*.tar.gz
+dist/
 
 # نظام
 .DS_Store
