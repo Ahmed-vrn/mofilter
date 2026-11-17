@@ -19,6 +19,17 @@ warn() { printf '\033[33m%s\033[0m\n' "$*"; }
 
 mkdir -p "$APP_HOME" "$APPS_DIR" "$ICON_ROOT"
 
+# التطبيق نفسه: انسخه إن وُجد بجانب مجلد desktop/ (نقل «تطبيق سطح المكتب» وحده)
+APP_SRC=""
+for cand in "$HERE/../vpn-web-app.py" "$HERE/vpn-web-app.py"; do
+  [ -f "$cand" ] && APP_SRC="$cand" && break
+done
+if [ -n "$APP_SRC" ]; then
+  install -m 755 "$APP_SRC" "$APP_HOME/vpn-web-app.py"
+fi
+[ -f "$APP_HOME/vpn-web-app.py" ] || \
+  warn "لم يُعثر على vpn-web-app.py — انسخه إلى $APP_HOME أو شغّل الحزمة الكاملة"
+
 install -m 755 "$HERE/mofilter-desktop.py" "$APP_HOME/mofilter-desktop"
 
 for size in 16 24 32 48 64 128 256 512 1024; do
