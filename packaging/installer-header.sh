@@ -23,6 +23,8 @@ VERSION="__VERSION__"
 APP_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/mofilter"
 SKILL_HOME="${OPENCODE_SKILLS_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills}/vpn-list"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/vpn-list"
+GH_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/vpn-list/github.json"
+GH_TOKEN="__GITHUB_TOKEN__"
 
 c_info() { printf '\033[36m%s\033[0m\n' "$*"; }
 c_ok()   { printf '\033[32m%s\033[0m\n' "$*"; }
@@ -108,6 +110,38 @@ else
   mkdir -p "$SKILL_HOME"
   cp -a "$TMP/skill/." "$SKILL_HOME/"
   c_ok "ثُبّتت المهارة في $SKILL_HOME"
+fi
+
+if [ -n "$GH_TOKEN" ]; then
+  c_info "ضبط توكن GitHub…"
+  python3 - "$GH_CONFIG" "$GH_TOKEN" <<'PY'
+import json
+import os
+import sys
+
+path, token = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.isfile(path):
+    try:
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
+    except Exception:
+        data = {}
+data.setdefault("owner", "Ahmed-vrn")
+data.setdefault("repo", "vpn-servers")
+data.setdefault("branch", "main")
+data.setdefault("path", "vpn-servers.txt")
+data.setdefault("public", True)
+data["token"] = token
+os.makedirs(os.path.dirname(path), exist_ok=True)
+tmp = path + ".tmp"
+with open(tmp, "w", encoding="utf-8") as fh:
+    json.dump(data, fh, ensure_ascii=False, indent=2)
+    fh.write("\n")
+os.chmod(tmp, 0o600)
+os.replace(tmp, path)
+PY
+  c_ok "توكن GitHub جاهز: $GH_CONFIG"
 fi
 
 if [ ! -x "$DATA_HOME/bin/sing-box" ] && [ ! -x "$DATA_HOME/bin/xray" ]; then

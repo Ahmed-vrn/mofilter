@@ -8,6 +8,10 @@
 #    bash build_package.sh --no-test       # بناء سريع بلا اختبارات
 #    bash build_package.sh --output /tmp/x # مسار إخراج مختلف
 #    bash build_package.sh --version 1.4.1 # التحقق من إصدار محدد
+#    bash build_package.sh --github-token TOKEN # ضمّن توكن GitHub (سرّي!)
+#
+#  تحذير: الحزمة الناتجة مع --github-token تحتوي على التوكن بنص صريح.
+#  لا تشاركها ولا ترفعها إلى GitHub أو أي خدمة أخرى.
 #
 #  المصادر:
 #    vpn-web-app.py          التطبيق
@@ -21,6 +25,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HEADER="$ROOT/packaging/installer-header.sh"
 OUT="$ROOT/مفلتر السيرفرات"
 RUN_TESTS=1
+GH_TOKEN="${MOFILTER_GITHUB_TOKEN:-}"
 
 say()  { printf '\033[36m▸\033[0m %s\n' "$*"; }
 ok()   { printf '\033[32m✔\033[0m %s\n' "$*"; }
@@ -34,6 +39,8 @@ while [ $# -gt 0 ]; do
     --output=*) OUT="${1#*=}" ;;
     --version) [ $# -ge 2 ] || die "--version يحتاج رقمًا"; WANT_VERSION="$2"; shift ;;
     --version=*) WANT_VERSION="${1#*=}" ;;
+    --github-token) [ $# -ge 2 ] || die "--github-token يحتاج توكنًا"; GH_TOKEN="$2"; shift ;;
+    --github-token=*) GH_TOKEN="${1#*=}" ;;
     -h|--help)
       awk 'NR==1 {next} /^# =+$/ { if (started) exit; started=1; next } started { sub(/^# ?/, ""); print }' "${BASH_SOURCE[0]}"
       exit 0 ;;
@@ -41,6 +48,13 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+if [ -n "$GH_TOKEN" ]; then
+  case "$GH_TOKEN" in
+    *[!A-Za-z0-9_]*) die "التوكن يحتوي محارف غير متوقعة" ;;
+  esac
+  warn "الحزمة الناتجة ستضمّن توكن GitHub — لا تشاركها أو ترفعها إلى أي خدمة."
+fi
 
 [ -f "$ROOT/vpn-web-app.py" ] || die "vpn-web-app.py غير موجود"
 [ -f "$ROOT/skill/scripts/run.py" ] || die "skill/ غير مكتمل (run.py مفقود)"
@@ -110,12 +124,17 @@ tar -czf "$TMP/payload.tar.gz" -C "$STAGE" .
 base64 -w 76 "$TMP/payload.tar.gz" > "$TMP/payload.b64" 2>/dev/null \
   || base64 "$TMP/payload.tar.gz" > "$TMP/payload.b64"
 
-sed "s/__VERSION__/$APP_VERSION/g" "$HEADER" > "$TMP/header.sh"
+sed -e "s/__VERSION__/$APP_VERSION/g" -e "s/__GITHUB_TOKEN__/$GH_TOKEN/g" "$HEADER" > "$TMP/header.sh"
 cat "$TMP/header.sh" "$TMP/payload.b64" > "$TMP/mofilter.new"
 chmod +x "$TMP/mofilter.new"
 
 say "التحقق من الحزمة الناتجة"
 bash -n "$TMP/mofilter.new"
+if [ -n "$GH_TOKEN" ]; then
+  grep -qF "GH_TOKEN=\"$GH_TOKEN\"" "$TMP/mofilter.new" || die "تعذّر تضمين التوكن في الحزمة"
+else
+  grep -qF 'GH_TOKEN=""' "$TMP/mofilter.new" || die "الحزمة تحتوي توكنًا غير متوقع"
+fi
 GOT="$("$TMP/mofilter.new" --version)"
 [ "$GOT" = "مفلتر السيرفرات $APP_VERSION" ] || die "إصدار الحزمة غير صحيح: $GOT"
 
