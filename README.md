@@ -23,7 +23,8 @@ behaviour of MTS, Megafon, Beeline and Tele2.
   outbound and tested for several passes; only stable survivors are exported.
 - **Russia-first sources.** A curated registry of ~25 GitHub/GitVerse lists
   (whitelist, mobile, CIDR), plus a bounded GitHub discovery cache refreshed
-  every 24 hours. Large generic lists are opt-in (`--deep-sources`).
+  every 24 hours. Large generic lists are opt-in (`--deep-sources`, or the
+  «مصادر عميقة» switch in the app window).
 - **Smart de-duplication.** Normalises links (including base64, markdown, JSON
   and HTML wrapping) and collapses by `host:port:sni`, keeping the variant
   with the best SNI score.
@@ -127,7 +128,7 @@ tiers:
 | --- | --- | --- |
 | core | ~25 curated GitHub/GitVerse lists | every run |
 | discovered | newest GitHub repos in the Russia topics, probed and capped | once per 24 h |
-| deep | very large mixed lists (thousands of links) | `--deep-sources` |
+| deep | very large mixed lists (thousands of links), incl. the `rjsxrd` whitelist-bypass feed (vless + ss + hysteria2, hourly) | `--deep-sources` / `VPN_DEEP=1` / app switch |
 
 ## Command line
 
@@ -247,6 +248,26 @@ Without it, the publish button is disabled and auto-sync is skipped.
 
 **How do I reset everything?**
 See the **Uninstall** section, then re-run the installer.
+
+## Changelog
+
+### 1.5.0 — 2026-11-20
+
+- **New source:** `whoahaow/rjsxrd` → `bypass/bypass-all.txt`, deep tier only.
+  Measured 2026-11-20: 474 usable links (vless, shadowsocks, hysteria2),
+  refreshed hourly; ≈25% of a 30-link sample survived two sing-box passes.
+- **Deep tier is now one click:** a «مصادر عميقة» checkbox next to
+  «كشف الخنق» toggles the deep lists from the window. The choice is stored in
+  `webapp-settings.json` (`deep`), so no terminal or `VPN_DEEP=1` is needed.
+- `/api/settings` validates and persists the `deep` flag with the other
+  options.
+- App, skill and desktop launcher share version **1.5.0** (the build refuses
+  mismatched versions).
+
+### 1.4.1 — 2026-11-18
+
+- Unified portable package, token-free builds (`--github-token` is local-only),
+  XDG paths, hostile Host/Origin rejection, CSP, unit tests.
 
 ## License
 

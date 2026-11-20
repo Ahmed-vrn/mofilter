@@ -139,7 +139,8 @@ registry adds verified ones next to them.
 | --- | --- | --- |
 | core | ~25 curated GitHub/GitVerse lists (whitelist, mobile, CIDR) | every run |
 | discovered | newest GitHub repos on the Russia topics, probed and capped (~1200 links, ≥15% RU SNI) | once per 24h, automatic |
-| deep | very large mixed lists (thousands of links) | `--deep-sources` / `VPN_DEEP=1` |
+| deep | very large mixed lists (thousands of links), including the
+`whoahaow/rjsxrd` whitelist-bypass feed (vless + ss + hysteria2, hourly) | `--deep-sources` / `VPN_DEEP=1` / the app's "مصادر عميقة" switch |
 
 ```bash
 python3 scripts/sources_ru.py --list                 # show curated + deep

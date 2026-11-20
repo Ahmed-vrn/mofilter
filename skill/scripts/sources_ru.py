@@ -97,6 +97,10 @@ DEEP = [
     ("flarefeed-top500", "https://raw.githubusercontent.com/svinakraft-maker/FlareFeed/HEAD/public/Top500.txt"),
     ("avatars-all", "https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/HEAD/all_configs.txt"),
     ("flat447-full", "https://raw.githubusercontent.com/FLAT447/v2ray-lists/HEAD/WHITE_FULL.txt"),
+    # Whitelist-bypass feed for Russian mobile networks (vless + ss +
+    # hysteria2, refreshed hourly).  Measured 2026-11-20: 474 usable
+    # links, ~25% of a 30-link sample survived two sing-box passes.
+    ("rjsxrd-bypass", "https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt"),
 ]
 
 # GitHub discovery: repositories carrying these topics are scanned for files

@@ -22,7 +22,7 @@ import sys
 import time
 import urllib.request
 
-VERSION = "1.4.1"
+VERSION = "1.5.0"
 NAME = "مفلتر السيرفرات"
 
 HOME = os.path.expanduser("~")

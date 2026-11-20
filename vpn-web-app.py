@@ -37,7 +37,7 @@ from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlparse
 
-APP_VERSION = "1.4.1"
+APP_VERSION = "1.5.0"
 # أيقونة التطبيق (64px) مضمّنة كي تظهر نافذة سطح المكتب بأيقونة صحيحة حتى بلا ملفات خارجية.
 ICON_B64 = "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"
 HOME = os.path.expanduser("~")
@@ -637,7 +637,8 @@ class Runner:
             "WEBAPP_DATA": DATA_DIR,
             "WEBAPP_RAW": RAW_LINKS,
             "WEBAPP_RU_EXTRA": ",".join(RU_EXTRA_SOURCES),
-            "WEBAPP_DEEP": "1" if os.environ.get("VPN_DEEP", "").lower() in ("1", "true", "yes", "on") else "0",
+            "WEBAPP_DEEP": "1" if (os.environ.get("VPN_DEEP", "").lower() in ("1", "true", "yes", "on")
+                                    or bool(load_settings().get("deep"))) else "0",
             "VPN_THRONE_SYNC": "0",
             "VPN_DESKTOP": DESKTOP,
             "VPN_DATA": DATA_DIR,
@@ -1119,6 +1120,7 @@ HTML = r"""<!DOCTYPE html>
         <option value="tele2">Tele2</option>
       </select>
       <label class="minichk" title="كشف الخنق الصامت (TSPU)"><input type="checkbox" id="throttleChk" checked> كشف الخنق</label>
+      <label class="minichk" title="مصادر إضافية ضخمة (روابط أكثر، لكن البحث أبطأ)"><input type="checkbox" id="deepChk"> مصادر عميقة</label>
       <select id="dedupeSel" class="sel" title="إزالة التكرار قبل الفحص">
         <option value="smart">تكرار: ذكي</option>
         <option value="server">تكرار: حسب الخادم</option>
@@ -1297,6 +1299,7 @@ HTML = r"""<!DOCTYPE html>
         var cb = $("autoSync"); if(document.activeElement !== cb) cb.checked = !!d.settings.auto_sync;
         if(d.settings.carrier) $("carrierSel").value = d.settings.carrier;
         if(typeof d.settings.throttle === "boolean") $("throttleChk").checked = d.settings.throttle;
+        if(typeof d.settings.deep === "boolean") $("deepChk").checked = d.settings.deep;
         if(d.settings.dedupe) $("dedupeSel").value = d.settings.dedupe;
         if(typeof d.settings.rus_limit === "number" && document.activeElement !== $("rusLimit")) $("rusLimit").value = d.settings.rus_limit;
       }
@@ -1462,6 +1465,11 @@ HTML = r"""<!DOCTYPE html>
     api("/api/settings", {method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({auto_sync: e.target.checked})})
       .then(function(){ toast(e.target.checked ? "النشر التلقائي مفعّل" : "النشر التلقائي متوقف"); });
+  });
+  $("deepChk").addEventListener("change", function(e){
+    api("/api/settings", {method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({deep: e.target.checked})})
+      .then(function(){ toast(e.target.checked ? "المصادر العميقة مفعّلة — البحث سيكون أبطأ" : "المصادر العميقة متوقفة"); });
   });
   $("btnCancel").addEventListener("click", function(){
     api("/api/cancel", {method:"POST"}).then(function(d){ toast(d.ok ? "تم طلب الإيقاف" : (d.error||"فشل")); });
@@ -1669,6 +1677,8 @@ class Handler(BaseHTTPRequestHandler):
                 data["throttle"] = bool(payload.get("throttle"))
             if "dedupe" in payload and str(payload.get("dedupe")) in ("text", "smart", "server"):
                 data["dedupe"] = str(payload.get("dedupe"))
+            if "deep" in payload:
+                data["deep"] = bool(payload.get("deep"))
             save_settings(data)
             self._json({"ok": True, "settings": data})
             return
